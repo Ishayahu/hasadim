@@ -1,0 +1,22 @@
+{% extends "RUS/gmah_base.html" %}
+{% block title %}
+    {{title}}
+{% endblock %}
+{% block style %}
+    <script>
+    </script>
+    <style>
+    </style>
+{% endblock %}
+{% block content %}
+    <p>{{claim.id}}
+    <p>{{claim.name}}
+    <p>{{claim.description}}
+    <p>{{claim.owner.fio}}
+    <p>{{claim.open_date}}
+    <a href='/claim/edit/{{claim.id}}/'>редактировать</a>
+    {% for file in files %}
+        <img src="{{file.file.url}}" /><a href="/image_delete/{{file.id}}">X</a>
+    {% endfor %}
+
+{% endblock %}

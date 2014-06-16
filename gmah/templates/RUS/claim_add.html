@@ -1,0 +1,22 @@
+{% extends "RUS/gmah_base.html" %}
+{% block title %}
+    {{title}}
+{% endblock %}
+{% block style %}
+    <script>
+    </script>
+    <style>
+    </style>
+{% endblock %}
+{% block content %}
+    {% if form.errors %}
+    {#    {{form.errors}} #}
+    {% endif %}
+    <form action="" method="post"  enctype="multipart/form-data">
+        {% csrf_token %}
+        <table border=1>
+            {{ NewClaimForm.as_table }}
+        </table>
+        <input type="submit">
+    </form>
+{% endblock %}
