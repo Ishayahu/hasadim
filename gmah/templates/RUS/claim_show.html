@@ -9,14 +9,16 @@
     </style>
 {% endblock %}
 {% block content %}
+    <img src="{{first_file.get_absolute_url}}" id='full_image' previous="img_{{first_file.id}}"/>
     <p>{{claim.id}}
     <p>{{claim.name}}
     <p>{{claim.description}}
     <p>{{claim.owner.fio}}
     <p>{{claim.open_date}}
     <a href='/claim/edit/{{claim.id}}/'>редактировать</a>
+    <div id="img_{{first_file.id}}" hidden><img src="{{first_file.get_absolute_url}}"  class='thumbnail' onclick="show_full('img_{{first_file.id}}')" /><a href="/image_delete/{{first_file.id}}">X</a></div>
     {% for file in files %}
-        <img src="{{file.file.url}}" /><a href="/image_delete/{{file.id}}">X</a>
+        <div id="img_{{file.id}}"><img src="{{file.get_absolute_url}}" class='thumbnail' onclick="show_full('img_{{file.id}}')" /><a href="/image_delete/{{file.id}}">X</a></div>
     {% endfor %}
 
 {% endblock %}

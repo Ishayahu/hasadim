@@ -29,7 +29,12 @@ register_lang('ru','RUS')
 register_lang('eng','ENG')
 app='gmah'
 
-def save_file(files,id):
+def save_file(file_instance,id):
+    # размеры итогового файла
+    h=480
+    w=480
+    background_color = "green"
+    # background_color = "white"
     a = datetime.datetime.now()
     c = make_aware(a,get_current_timezone())
     b = str(c)
@@ -38,17 +43,46 @@ def save_file(files,id):
     d = '_'.join((b.split(' ')[0],'_'.join(b.split(' ')[1].split('.')[0].split(':')),b.split(' ')[1].split('.')[1].split('+')[0]))
     # fn = '_'.join([ c, filename])
     # raise NotImplementedError('a')
-    instanse = File(file=files['file'],
+    instanse = File(file=file_instance,
                     timestamp=c,
-                    file_name = 'img_for_'+str(d),
+                    file_name = str(d),
                     description = 'image for '+str(id),)
     instanse.save()
     path_to_file = instanse.file.path
     print path_to_file
     img=Image.open(path_to_file)
-    img.thumbnail((100,100),Image.ANTIALIAS)
-    img.save(path_to_file,'JPEG')
-
+    # вычисляем пропорции
+    iw, ih = img.size
+    ratio = float(max(ih,iw))/h
+    new_h = int(round(ih/ratio))
+    new_w = int(round(iw/ratio))
+    # raise ImportError('')
+    img.thumbnail((new_w,new_h),Image.ANTIALIAS)
+    # а теперь мы делаем изображение стандартного размера, вставляем в него
+    # наше превью, чтобы всё изображения были равного размера, а пустое место
+    # будет белым
+    a=Image.new("RGB",(w,h),background_color)
+    # вычисляем куда вставлять картинку
+    ins_h = 0
+    ins_w = 0
+    if new_w > new_h: # значит, картинка в ширину и надо вставить по середине высоты
+        ins_h = int(round((h-new_h)/2))
+    if new_w < new_h: # значит, картинка в высоту и надо вставить по середине ширины
+        ins_w = int(round((w-new_w)/2))
+    a.paste(img,(ins_w,ins_h))
+    a.save(path_to_file,'JPEG')
+    # img.save(path_to_file+'test.jpeg','JPEG')
+    
+    
+    
+    
+    
+    
+    # img.save(path_to_file,'JPEG')
+    
+    # im.paste(image, box)
+    
+    
     return instanse
 
 # @login_required
@@ -75,9 +109,13 @@ def claim_add(request):
                         open_date = open_date,
                         owner = fio)
             new_claim.save()
+            a = request.FILES
             if request.FILES:
-                new_claim.file.add(save_file(request.FILES,new_claim.id))
-            new_claim.save()
+                for filed in ('file','file1','file2','file3'):
+                    if filed in request.FILES:
+                        print request.FILES[filed]
+                        new_claim.file.add(save_file(request.FILES[filed],new_claim.id))
+                        new_claim.save()
             return (False,HttpResponseRedirect('/'))
         return (False,HttpResponseRedirect('/'))   
     return (True,('claim_add.html',{'NewClaimForm':{}},{'title':'GMAH.RU - добавить заявку',},request,app))
@@ -114,4 +152,6 @@ def claim_show(request,id):
     # a = str(claim.id)
     title = u'GMAH.RU - заявка %s' % str(claim.id)
     files=claim.file.all()
-    return (True,('claim_show.html',{},{'title':title ,'claim':claim,'files':files},request,app))
+    first_file = files[0]
+    files = files[1:]
+    return (True,('claim_show.html',{},{'title':title ,'claim':claim,'files':files,'first_file':first_file},request,app))

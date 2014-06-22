@@ -33,6 +33,9 @@ class NewClaimForm(forms.Form):
     name = forms.CharField(max_length=140, label='Название заявки')
     description = forms.CharField(widget=forms.Textarea, label='Описание')
     file  = forms.FileField(label="Прикрепить картинку", required=False)
+    file1  = forms.FileField(label="Прикрепить картинку", required=False)
+    file2  = forms.FileField(label="Прикрепить картинку", required=False)
+    file3  = forms.FileField(label="Прикрепить картинку", required=False)
 
     # owner = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Владелец')
     # open_date = forms.DateTimeField(label='Дата создания заявки')

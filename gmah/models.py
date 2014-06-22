@@ -15,7 +15,12 @@ def content_file_name(instance, filename):
     # raise NotImplementedError('RuntimeError')
     d = '_'.join((b.split(' ')[0],'_'.join(b.split(' ')[1].split('.')[0].split(':')),b.split(' ')[1].split('.')[1].split('+')[0]))
     # return '/claim_files/'+'_'.join([ d, filename])
-    return d+'.jpg'
+    a = '/claim_files/'+d+'.jpg'
+    # raise ImportError(a)
+    return '/usr/home/ishayahu/gmah/claim_files/claim_files/'+d+'.jpg'
+    # return '/media/'+d+'.jpg'
+    # WORKING
+    # return d+'.jpg'
 class File(models.Model):
     timestamp = models.DateTimeField()
     file_name = models.CharField(max_length=140)
@@ -26,9 +31,9 @@ class File(models.Model):
         ordering = ['timestamp']
     def __unicode__(self):
         return str(self.id)+" "+self.file_name
-    @models.permalink
+    # @models.permalink
     def get_absolute_url(self):
-        return "/media/%s" % self.id
+        return "/media/claim_files/%s.jpg" % self.file_name
 
 class Person(models.Model):
     fio = models.CharField(max_length=140)

@@ -1,3 +1,14 @@
+.full_image{
+    height:480px;
+    width:480px;
+}
+.thumbnail{
+    height:120px;
+    width:120px;
+}
+
+
+
 .grey_text{
     color:grey;
 }
