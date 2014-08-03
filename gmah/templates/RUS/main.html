@@ -3,14 +3,30 @@
     {{title}}
 {% endblock %}
 {% block style %}
-
+    <script>
+        {% if requests %}
+            alert('У Вас есть {{ requests }} непросмотренных заявок на предоставление данных. Пожалуйста, зайдите в профиль и посмотрите их')
+        {% endif %}
+    </script>
+    <style>
+    </style>
 {% endblock %}
 
 {% block content %}
+
     <h1>Список предложений</h1>
     <ol>
         {% for item in claims %}
-            <li><a href="/claim/show/{{item.id}}/" title="{{item.title}}" target="_blank">id={{item.id}}; №{{item.number}} от {{item.date}} от {{item.owner.fio}}</a> </li>
+            <li><a href="/claim/show/{{item.id}}/" title="{{item.title}}" target="_blank">id={{item.id}}; {{item.name}} от {{item.date}} от {{item.owner.fio}}</a>
+            {% if admin %}
+                <a href="/claim/delete/{{item.id}}/" title="Удалить">Х</a>
+            {% else %}
+                {% ifequal user item.owner.login %}
+                    <a href="/claim/delete/{{item.id}}/" title="Удалить">Х</a>
+                {% endifequal %}
+            {% endif %}
+
+            {# Ссылка на удаление заявки для хозяина или админа #}</li>
         {% endfor %}
     </ol>
 {% endblock %}

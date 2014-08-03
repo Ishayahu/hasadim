@@ -8,6 +8,7 @@ from gmah.models import Person, Claim
 # from tasks.todoes.models import Worker, Client
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.admin import widgets
+from django.contrib.auth.forms import UserCreationForm
 
 PRIORITY_CHOICES = (
         ('1','Лазар/Борода/Мотя'),
@@ -36,81 +37,22 @@ class NewClaimForm(forms.Form):
     file1  = forms.FileField(label="Прикрепить картинку", required=False)
     file2  = forms.FileField(label="Прикрепить картинку", required=False)
     file3  = forms.FileField(label="Прикрепить картинку", required=False)
+    def __init__(self,arg_dict):
+        count_of_files = arg_dict.pop('count_of_files','')
+        field_names = ('file3','file2','file1','file')
+        super(NewClaimForm, self).__init__(arg_dict)
+        if count_of_files:
+            for i in range(count_of_files):
+                self.fields.pop(field_names[i])
 
-    # owner = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Владелец')
-    # open_date = forms.DateTimeField(label='Дата создания заявки')
-    
-# class TicketEditForm_RUS(forms.Form):
-    # name = forms.CharField(max_length=140, label='Название заявки')
-    # pbus = forms.ModelChoiceField(queryset  = ProblemByUser.objects.all(), label='Проблема со слов пользователя')
-    # description = forms.CharField(widget=forms.Textarea, label='Описание')
-    # clients = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Заявитель')
-    # priority = forms.ChoiceField(choices = PRIORITY_CHOICES, label='Приоритет')
-    # category = forms.ModelChoiceField(queryset  = Categories.objects.all(), label='Категория')
-    # start_date = forms.DateTimeField(label='Дата создания заявки',input_formats=inp_f)
-    # when_to_reminder = forms.DateTimeField(label='Установить напоминание',input_formats=inp_f,required=False)
-    # due_date = forms.DateTimeField(label='Предполагаемая дата завершения',input_formats=inp_f)
-    # workers = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Исполнитель')
-    # percentage = forms.DecimalField(min_value=0, max_value=100, label='Процент выполнения')
-    # file  = forms.FileField(label="Прикрепить файл", required=False)
-# class NewRegularTicketForm_RUS(forms.Form):
-    # name = forms.CharField(max_length=140, label='Название заявки')
-    # description = forms.CharField(widget=forms.Textarea, label='Описание',required=False)
-    # clients = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Заявитель')
-    # priority = forms.ChoiceField(widget=forms.RadioSelect,choices = PRIORITY_CHOICES, label='Приоритет')
-    # category = forms.ModelChoiceField(queryset  = Categories.objects.all(), label='Категория')
-    # start_date = forms.DateTimeField(label='Дата создания заявки',input_formats=inp_f)
-    # stop_date = forms.DateTimeField(label='Дата завершения',input_formats=inp_f,required=False)
-    # workers = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Исполнитель')
-# class EditRegularTicketForm_RUS(forms.Form):
-    # name = forms.CharField(max_length=140, label='Название заявки')
-    # description = forms.CharField(widget=forms.Textarea, label='Описание',required=False)
-    # clients = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Заявитель')
-    # priority = forms.ChoiceField(widget=forms.RadioSelect,choices = PRIORITY_CHOICES, label='Приоритет')
-    # category = forms.ModelChoiceField(queryset  = Categories.objects.all(), label='Категория')
-    # start_date = forms.DateTimeField(label='Дата создания заявки',input_formats=inp_f)
-    # when_to_reminder = forms.DateTimeField(label='Установить напоминание',input_formats=inp_f,required=False)
-    # stop_date = forms.DateTimeField(label='Дата завершения',input_formats=inp_f,required=False)
-    # workers = forms.ModelChoiceField(queryset  = Person.objects.all(), label='Исполнитель')
 
-# class TicketClosingForm_RUS(forms.Form):
-    # done_date = forms.DateTimeField(label='Дата закрытия заявки',input_formats=inp_f)
-    # pbw = forms.ModelChoiceField(queryset  = ProblemByWorker.objects.all(), label='Выявленная проблема')
-# class TicketConfirmingForm_RUS(forms.Form):
-    # confirmed = forms.BooleanField(required=False)
-    # confirmed_date = forms.DateTimeField(label='Дата подтверждения закрытия заявки',input_formats=inp_f)
-    
-# class NoteToTicketAddForm(forms.Form):
-    # note = forms.CharField(widget=forms.Textarea, label='Комментарий',required=False )
-    # workers = forms.ModelMultipleChoiceField(queryset  = Person.objects.all(), label='Кого ещё уведомить о комментарии?',required=False)
 
-    
-# class UserCreationFormMY_RUS(UserCreationForm):
-    # fio = forms.CharField(label='ФИО')
-    # mail = forms.EmailField(label = 'Мыло')
-    # tel = forms.CharField(label='Телефон', max_length=10, min_length=10)
-    
-# class TicketSearchForm_RUS(forms.Form):
-    # name = forms.CharField(max_length=140, label='Текст для поиска')
 
-# class NoteToTicketAddForm_RUS(forms.Form):
-    # def __init__(self, *args, **kwargs):
-        # self.defaults = kwargs.pop('defaults','')
-        # self.exclude = kwargs.pop('exclude','')
-        # super(NoteToTicketAddForm_RUS, self).__init__(*args, **kwargs)
-        # self.fields['workers'].queryset = Person.objects.exclude(fio__in = [person.fio for person in self.exclude ])
-        # self.fields['workers'].initial = Person.objects.filter(fio__in = self.defaults)
-
-    # note = forms.CharField(widget=forms.Textarea, label='Комментарий',required=False )
-    # workers = forms.ModelMultipleChoiceField(queryset  = Person.objects.all(), label='Кого ещё уведомить о комментарии?',required=False,)
-# class File_and_NoteToTicketAddForm_RUS(forms.Form):
-    # def __init__(self, *args, **kwargs):
-        # self.defaults = kwargs.pop('defaults','')
-        # self.exclude = kwargs.pop('exclude','')
-        # super(File_and_NoteToTicketAddForm_RUS, self).__init__(*args, **kwargs)
-        # self.fields['workers'].queryset = Person.objects.exclude(fio__in = [person.fio for person in self.exclude ])
-        # self.fields['workers'].initial = Person.objects.filter(fio__in = self.defaults)
-
-    # note = forms.CharField(widget=forms.Textarea, label='Комментарий',required=False )
-    # file  = forms.FileField()
-    # workers = forms.ModelMultipleChoiceField(queryset  = Person.objects.all(), label='Кого ещё уведомить о комментарии?',required=False,)
+class UserCreationFormMY(UserCreationForm):
+    fio = forms.CharField(label='ФИО')
+    mail = forms.EmailField(label = 'Мыло')
+    tel = forms.CharField(label='Телефон', max_length=10, min_length=10)
+class UserEditForm(forms.Form):
+    fio = forms.CharField(label='ФИО')
+    mail = forms.EmailField(label = 'Мыло')
+    tel = forms.CharField(label='Телефон', max_length=10, min_length=10)

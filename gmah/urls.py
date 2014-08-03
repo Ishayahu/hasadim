@@ -1,7 +1,11 @@
+# -*- coding:utf-8 -*-
+# coding=<utf8>
+
 from django.conf.urls import patterns, include, url
 from django.conf import settings
 
 from django.contrib import admin
+from django.contrib.auth.views import login, logout, password_change,password_change_done
 
 import gmah.views
 
@@ -18,6 +22,23 @@ urlpatterns = patterns('',
 	url(r'^claim/add/$', gmah.views.claim_add),
 	url(r'^claim/show/(\d+)/$', gmah.views.claim_show),
 	url(r'^claim/edit/(\d+)/$', gmah.views.claim_edit),
+	url(r'^claim/delete/(\d+)/$', gmah.views.claim_delete),
+	url(r'^claim/send_request/(\d+)/$', gmah.views.claim_send_request),
+
+	url(r'^image/delete/(\d+)/$', gmah.views.image_delete),
+
+
+    
+# Для администратора:
+    url(r'^accounts/$', login),
+    url(r'^login/$', login),
+    url(r'^accounts/login/$', login),
+    url(r'^password_change/$', password_change),
+    url(r'^password_change_done/$', password_change_done),
+    url(r'^accounts/register/$', gmah.views.register),
+    url(r'^accounts/logout/$', logout),
+    url(r'^accounts/profile/show/(\d+)/$', gmah.views.profile_show),
+    url(r'^accounts/profile/edit/(\d+)/$', gmah.views.profile_edit),
 )
 if settings.DEBUG:
     urlpatterns += patterns('',

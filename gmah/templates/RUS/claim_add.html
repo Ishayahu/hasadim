@@ -12,6 +12,12 @@
     {% if form.errors %}
     {#    {{form.errors}} #}
     {% endif %}
+    {% for file in files %}
+        <div id="img_{{file.id}}">
+            <img src="{{file.get_absolute_url}}" class='thumbnail' onclick="show_full('img_{{file.id}}')" />
+                <a href="/image/delete/{{file.id}}">X</a>
+        </div>
+    {% endfor %}
     <form action="" method="post"  enctype="multipart/form-data">
         {% csrf_token %}
         <table border=1>

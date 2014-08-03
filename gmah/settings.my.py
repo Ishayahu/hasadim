@@ -79,79 +79,14 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-# MEDIA_ROOT = '/projects/gmah/claim_files/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'claim_files')
-MEDIA_ROOT = '/home/hasadimr/domains/hasadim.ru/public_html/media/'
-MEDIA_URL = '/media/'
+MEDIA_ROOT = '/usr/home/ishayahu/gmah/claim_files'
+
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-# MEDIA_URL = 'http://hasadim.ru/media/'
+MEDIA_URL = 'http://172.29.100.46:8080/media/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-# STATIC_URL = '/static/'
-STATIC_ROOT = '/home/hasadimr/domains/hasadim.ru/public_html/static/'
 STATIC_URL = '/static/'
-
-# Logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-        'standard': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s\n",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
-        },
-    },
-    'handlers': {
-        # 'null': {
-            # 'level': 'DEBUG',
-            # 'class': 'django.utils.log.NullHandler',
-        # },
-        # 'console':{
-            # 'level': 'DEBUG',
-            # 'class': 'logging.StreamHandler',
-            # 'formatter': 'simple'
-        # },
-        # 'mail_admins': {
-            # 'level': 'ERROR',
-            # 'class': 'django.utils.log.AdminEmailHandler',
-            # 'filters': ['special']
-        # }
-        'file': {
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename': MEDIA_ROOT + "logfile.log",
-            'maxBytes': 50000,
-            'backupCount': 2,
-            'formatter': 'standard',        }
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-        },
-        # 'django': {
-            # 'handlers': ['null'],
-            # 'propagate': True,
-            # 'level': 'INFO',
-        # },
-        # 'django.request': {
-            # 'handlers': ['mail_admins'],
-            # 'level': 'ERROR',
-            # 'propagate': False,
-        # },
-        # 'myproject.custom': {
-            # 'handlers': ['console', 'mail_admins'],
-            # 'level': 'INFO',
-            # 'filters': ['special']
-        # }
-    }
-}

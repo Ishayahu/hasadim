@@ -1,0 +1,80 @@
+{% extends "RUS/gmah_base.html" %}
+{% block title %}
+    {{title}} - Профиль пользователя {{ profile_owner.login }}
+{% endblock %}
+{% block style %}
+    <script>
+    </script>
+    <style>
+    </style>
+{% endblock %}
+{% block content %}
+    <table>
+        <tr>
+            <td>
+                Поле
+            </td>
+            <td>
+                Данные
+            </td>
+        </tr>
+        <tr>
+            <td>
+                ФИО
+            </td>
+            <td>
+                {{ profile_owner.fio }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Телефон
+            </td>
+            <td>
+                {{ profile_owner.tel }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Почта
+            </td>
+            <td>
+                {{ profile_owner.mail }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Рейтинг
+            </td>
+            <td>
+                {{ profile_owner.raiting }}
+            </td>
+        </tr>
+    </table>
+
+    {% ifequal profile_owner.login user %}
+        Запросы на контактые данные
+        {% if claims_with_requests %}
+            <table>
+               <tr>
+                    <td>
+                        Заявка
+                    </td>
+                    <td>
+                        Кто хочет
+                    </td>
+                </tr>
+            {% for item in claims_with_requests %}
+                <tr>
+                    <td>
+                        <a href="/claim/show/{{ item.claim.id }}/">{{ item.claim.name }}</a>
+                    </td>
+                    <td>
+                        <a href="/accounts/profile/show/{{ item.requester.id }}/">{{ item.requester.fio }}</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+    {% endifequal %}
+{% endblock %}

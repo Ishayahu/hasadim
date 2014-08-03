@@ -26,6 +26,7 @@ def add_error(message,request):
         else:
             request.session['my_error']=[]
     request.session['my_error'].append(message)
+    request.session.modified = True
     # print "error in "+request.path+" appended: "+str(request.session['my_error'])
 def shows_errors(fn):
     """
