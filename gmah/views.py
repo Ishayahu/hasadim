@@ -77,9 +77,10 @@ def register(request):
 @multilanguage
 def profile_show(request,id):
     class R():
-        def __init__(self,claim,requester):
+        def __init__(self,claim,requester,request):
             self.claim = claim
             self.requester = requester
+            self.request = request
     lang=select_language(request)
     user = request.user.username
     try:
@@ -90,6 +91,15 @@ def profile_show(request,id):
     who_can_see=[]
     who_can_see.extend(admins)
     who_can_see.append(profile_owner.login)
+    # добавить людей, которые отправляли запрос на предоставление
+    # контактных данных
+    # получаем список всех тех запросов, которые он отправил другим
+    #  людям
+    requests = Requests.objects.filter(person=profile_owner)
+    # получаем логины этих людей
+    requests_owners = list(set([a.claim_owner.login for a in requests]))
+    who_can_see.extend(requests_owners)
+    # raise NotImplementedError('a')
     if user not in who_can_see:
         add_error(u"Вы не имеете права просматривать этот профиль!",request)
         return (False,(HttpResponseRedirect("/")))
@@ -99,7 +109,7 @@ def profile_show(request,id):
     for r in requests:
         r.seen = True
         r.save()
-        claims_with_requests.append(R(r.claim,r.person))
+        claims_with_requests.append(R(r.claim,r.person,r))
     # return (True,('register.html',{'UserCreationFormMY':{}},{'title':'GMAH.RU',},request,app))
     return (True,('profile.html',{},{'title':'GMAH.RU','profile_owner':profile_owner,'user':user,'claims_with_requests':claims_with_requests},request,app))
 @login_required
@@ -147,6 +157,12 @@ def claim_send_request(request,id):
     except Person.DoesNotExist:
         add_error(u"Пользователь с логином %s не найден!" % user,request)
         return (False,(HttpResponseRedirect("/")))
+    # Добавляем разрешение для хозяина заявки на просмотр профиля пользователя, который хочет контактные данные
+    result = add_permission(to=user, for_whom=claim.id)
+    if result!='OK':
+        add_error(u"Результат попытки - %s" % result,request)
+        add_error(u"Не удалось задать разрешения на просмотр вашего профиля для хозяина заявки!",request)
+        return (False,(HttpResponseRedirect("/")))
     a = datetime.datetime.now()
     c = make_aware(a,get_current_timezone())
     new_request = Requests(claim = claim,
@@ -155,10 +171,42 @@ def claim_send_request(request,id):
                             date = c,
                             seen = False)
     new_request.save()
-    # Добавляем разрешение для хозяина заявки на просмотр профиля пользователя, который хочет контактные данные
-    if add_permission(to=user, for_whom=claim.id)!='OK':
-        add_error(u"Не удалось задать разрешения на просмотр вашего профиля для хозяина заявки!",request)
+    return (False,(HttpResponseRedirect("/")))
+@login_required
+@multilanguage
+def claim_accept_request(request,request_id):
+    """
+    Добавляет для заявки право на просмотра для того, кто отправил
+    запрос на зявку
+    :param request: страндартный параметр
+    :param request_id: id запроса
+    :return:
+    """
+    lang=select_language(request)
+    user = request.user.username
+    try:
+        info_request = Requests.objects.get(id=request_id)
+    except Requests.DoesNotExist:
+        add_error(u"Запрос с номером  %s не найден!" % id,request)
         return (False,(HttpResponseRedirect("/")))
+    claim = info_request.claim
+    # Добавляем разрешение для хозяина заявки на просмотр профиля пользователя, который хочет контактные данные
+    result = add_permission(to=claim, for_whom=info_request.person.id)
+    if result!='OK':
+        add_error(u"Результат попытки - %s" % result,request)
+        add_error(u"Не удалось задать разрешения на просмотр ваших "
+                  u"данных для заявки %s для пользователя %s!" % (
+            claim,info_request.person),
+                  request)
+        return (False,(HttpResponseRedirect("/")))
+    # a = datetime.datetime.now()
+    # c = make_aware(a,get_current_timezone())
+    # new_request = Requests(claim = claim,
+    #                         person = user,
+    #                         claim_owner = claim.owner,
+    #                         date = c,
+    #                         seen = False)
+    # new_request.save()
     return (False,(HttpResponseRedirect("/")))
 
 def save_file(file_instance,id,request):
@@ -217,10 +265,16 @@ def main(request):
         user = Person.objects.get(login = user)
     except Person.DoesNotExist:
         add_error(u"Пользователь с логином %s не найден!" % user,request)
-        return (False,(HttpResponseRedirect("/")))
+        return (False,(HttpResponseRedirect("/error/")))
     claims =  Claim.objects.filter(deleted=False).filter(closed=False)
     requests = len(Requests.objects.filter(claim_owner = user).filter(seen=False))
     return (True,('main.html',{},{'title':'GMAH.RU','claims':claims,'user':user,'requests':requests},request,app))
+@multilanguage
+@shows_errors
+def error_page(request):
+    user = request.user.username
+    return (True,('error.html',{},{'title':'GMAH.RU',
+                               'user':user,},request,app))
 @login_required
 @multilanguage
 def claim_delete(request,id):
@@ -321,6 +375,13 @@ def claim_edit(request,id):
 @multilanguage
 @shows_errors
 def claim_show(request,id):
+    lang=select_language(request)
+    user = request.user.username
+    try:
+        user = Person.objects.get(login=user)
+    except Person.DoesNotExist:
+        add_error(u"Пользователь с логином %s не найден!" % user,request)
+        return (False,(HttpResponseRedirect("/")))
     try:
         claim = Claim.objects.get(id=id)
     except Claim.DoesNotExist:
@@ -335,7 +396,17 @@ def claim_show(request,id):
         files = files[1:]
     else:
         first_file=''
-    return (True,('claim_show.html',{},{'title':title ,'claim':claim,'files':files,'first_file':first_file},request,app))
+    # Получаем список тех, кто может просмотреть данные пользователей
+
+    can_see_info =  str(user.id) in claim.acl.split(u';') or \
+                    user.login \
+                                                        in admins
+    return (True,('claim_show.html',{},{'title':title ,
+                                        'claim':claim,
+                                        'files':files,
+                                        'first_file':first_file,
+                                        'can_see_info':can_see_info,
+                                        },request,app))
 
 @login_required
 @multilanguage

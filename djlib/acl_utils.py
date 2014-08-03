@@ -88,13 +88,16 @@ def add_permission(to='', for_whom='',
     try:
         old_acl = to.__getattribute__(acl_field)
         tmp = [a for a in old_acl.split(acl_separator) if a]
-        tmp.append(for_whom)
+        tmp.append(str(for_whom))
         new_acl = acl_separator.join(tmp)
+
     except:
+        raise ImportError(u'a')
         return 'CHANGING_ERROR'
     try:
-        c.__setattr__(acl_field,new_acl)
-        c.save()
+        to.__setattr__(acl_field,new_acl)
+        to.save()
     except:
+        raise ImportError(u'b')
         return 'SAVING_ERROR'
     return 'OK'

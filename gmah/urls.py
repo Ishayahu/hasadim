@@ -17,17 +17,20 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-	
+
+
 	url(r'^$', gmah.views.main),
 	url(r'^claim/add/$', gmah.views.claim_add),
 	url(r'^claim/show/(\d+)/$', gmah.views.claim_show),
 	url(r'^claim/edit/(\d+)/$', gmah.views.claim_edit),
 	url(r'^claim/delete/(\d+)/$', gmah.views.claim_delete),
 	url(r'^claim/send_request/(\d+)/$', gmah.views.claim_send_request),
+	url(r'^claim/accept_request/(\d+)/$',
+        gmah.views.claim_accept_request),
 
 	url(r'^image/delete/(\d+)/$', gmah.views.image_delete),
 
-
+    url(r'^error/', gmah.views.error_page),
     
 # Для администратора:
     url(r'^accounts/$', login),

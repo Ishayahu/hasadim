@@ -17,6 +17,9 @@
     <p>{{claim.description}}</p>
     <p>{{claim.owner.fio}}</p>
     <p>{{claim.open_date}}</p>
+    {% if can_see_info %}
+        <h1>INFO</h1>
+    {% endif %}
     <p></p><a href='/claim/edit/{{claim.id}}/'>редактировать</a></p>
     <p><a href='/claim/send_request/{{claim.id}}/'>Отправить запрос на получение данных</a></p>
     <div id="img_{{first_file.id}}" hidden><img src="{{first_file.get_absolute_url}}"  class='thumbnail' onclick="show_full('img_{{first_file.id}}')" /><a href="/image_delete/{{first_file.id}}">X</a></div>

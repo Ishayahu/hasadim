@@ -20,6 +20,14 @@
         </tr>
         <tr>
             <td>
+                ID
+            </td>
+            <td>
+                {{ profile_owner.id }}
+            </td>
+        </tr>
+        <tr>
+            <td>
                 ФИО
             </td>
             <td>
@@ -71,6 +79,9 @@
                     </td>
                     <td>
                         <a href="/accounts/profile/show/{{ item.requester.id }}/">{{ item.requester.fio }}</a>
+                    </td>
+                    <td>
+                        <a href="/claim/accept_request/{{ item.request.id }}/">Принять запрос</a>
                     </td>
                 </tr>
             {% endfor %}
