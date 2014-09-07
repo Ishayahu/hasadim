@@ -27,11 +27,13 @@ urlpatterns = patterns('',
 	url(r'^claim/send_request/(\d+)/$', gmah.views.claim_send_request),
 	url(r'^claim/accept_request/(\d+)/$',
         gmah.views.claim_accept_request),
+	url(r'^/claim/withdraw_request/(\d+)/$',
+        gmah.views.claim_withdraw_request),
 
 	url(r'^image/delete/(\d+)/$', gmah.views.image_delete),
 
     url(r'^error/', gmah.views.error_page),
-    
+
 # Для администратора:
     url(r'^accounts/$', login),
     url(r'^login/$', login),
@@ -42,6 +44,7 @@ urlpatterns = patterns('',
     url(r'^accounts/logout/$', logout),
     url(r'^accounts/profile/show/(\d+)/$', gmah.views.profile_show),
     url(r'^accounts/profile/edit/(\d+)/$', gmah.views.profile_edit),
+    url(r'^accounts/profile/$', gmah.views.profile_redirect),
 )
 if settings.DEBUG:
     urlpatterns += patterns('',

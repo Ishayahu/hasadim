@@ -101,3 +101,47 @@ def add_permission(to='', for_whom='',
         raise ImportError(u'b')
         return 'SAVING_ERROR'
     return 'OK'
+def remove_permission(to='', for_whom='',
+                   acl_field='acl', acl_separator=u';'):
+    """
+    Убирает разрешение для объекта for_whom на просмотр
+    объекта, определяемоего при помощи строки to. По умолчанию для
+    хранения информации о правах
+    доступа к to используется поле acl_field. В качестве разделителя
+    значений в поле acl_field используется acl_separator
+
+    Возращаемые значения:
+
+   'CHANGING_ERROR' - ошибка произошла до попытки установить новое
+                        значение
+    'SAVING_ERROR' - ошибка произошла при попытке установить новое
+                    значение или сохранить его
+    'OK' - всё ок
+
+    Parameters
+    ----------
+    to : django.db.models.Model
+        Экзмепляр модели, содержащий параметр acl_field, доступ к
+        которому надо обеспечить
+    for_whom : string
+        Определитель (например, логин) того, кому надо
+        предоставить доступ
+    acl_field : string
+        Назавание поля объекта to, в котором хранится информация о
+        правах доступа к нему. По умолчанию - 'acl'
+    acl_separator : string
+        Разделитель значений в поле acl_field. По умолчанию ";"
+    """
+    try:
+        old_acl = to.__getattribute__(acl_field)
+        tmp = set([a for a in old_acl.split(acl_separator) if a])
+        tmp.remove(str(for_whom))
+        new_acl = acl_separator.join(tmp)
+    except:
+        return 'CHANGING_ERROR'
+    try:
+        c.__setattr__(acl_field,new_acl)
+        c.save()
+    except:
+        return 'SAVING_ERROR'
+    return 'OK'

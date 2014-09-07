@@ -63,7 +63,7 @@
     {% ifequal profile_owner.login user %}
         Запросы на контактые данные
         {% if claims_with_requests %}
-            <table>
+            <table border="1">
                <tr>
                     <td>
                         Заявка
@@ -82,6 +82,35 @@
                     </td>
                     <td>
                         <a href="/claim/accept_request/{{ item.request.id }}/">Принять запрос</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+        Выданные запросы
+        {% if given_requests %}
+            <table border="1">
+               <tr>
+                    <td>
+                        Заявка
+                    </td>
+                    <td>
+                        Кому выдано
+                    </td>
+                   <td>
+
+                    </td>
+                </tr>
+            {% for item in given_requests %}
+                <tr>
+                    <td>
+                        <a href="/claim/show/{{ item.claim.id }}/">{{ item.claim.name }}</a>
+                    </td>
+                    <td>
+                        <a href="/accounts/profile/show/{{ item.requester.id }}/">{{ item.requester.fio }}</a>
+                    </td>
+                    <td>
+                        <a href="/claim/withdraw_request/{{ item.request.id }}/">Отозвать</a>
                     </td>
                 </tr>
             {% endfor %}

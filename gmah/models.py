@@ -72,3 +72,7 @@ class Requests(models.Model):
     person = models.ForeignKey(Person, related_name = "request_owner",)
     date = models.DateTimeField()
     seen = models.BooleanField(default=False)
+    def __unicode__(self):
+        return u"from %s to %s claim %s" % (self.person.login,
+                                            self.claim_owner.login,
+                                            self.claim.id)

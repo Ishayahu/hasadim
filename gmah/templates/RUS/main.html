@@ -13,8 +13,12 @@
 {% endblock %}
 
 {% block content %}
-    <p>Привет <a href='/accounts/profile/show/{{ user.id }}/'
-            >{{ user }};;;;;;{{ user.id }}</a></p>
+    {% if user %}
+        <p>Привет <a href='/accounts/profile/show/{{ user.id }}/'>
+            {{ user }};;;;;;{{ user.id }}</a></p>
+    {% else %}
+        <a href="/accounts/login/">Войти на сайт</a>
+    {% endif %}
     <h1>Список предложений</h1>
     <ol>
         {% for item in claims %}

@@ -27,7 +27,7 @@ import datetime
 from djlib.multilanguage_utils import select_language,multilanguage,register_lang, get_localized_form#,register_app
 from djlib.cron_utils import decronize, crontab_to_russian, generate_next_reminder
 from djlib.text_utils import htmlize, what_to_people_friendly
-from djlib.acl_utils import  for_admins, admins_only, add_permission
+from djlib.acl_utils import  for_admins, admins_only, add_permission, remove_permission
 # from djlib.user_tracking import set_last_activity_model, get_last_activities
 from djlib.mail_utils import send_email_alternative
 from djlib.auxiliary import get_info
@@ -75,6 +75,17 @@ def register(request):
     return (True,('register.html',{'UserCreationFormMY':{}},{'title':'GMAH.RU','target':'Создать новый профиль',},request,app))
 @login_required
 @multilanguage
+def profile_redirect(request):
+    user = request.user.username
+    try:
+        profile_owner = Person.objects.get(login=user)
+    except Person.DoesNotExist:
+        add_error(u"Пользователь с id %s не найден!" % id,request)
+        return (False,(HttpResponseRedirect("/")))
+    return (False,(HttpResponseRedirect(
+        "/accounts/profile/show/%s/" % str(profile_owner.id))))
+@login_required
+@multilanguage
 def profile_show(request,id):
     class R():
         def __init__(self,claim,requester,request):
@@ -104,14 +115,27 @@ def profile_show(request,id):
         add_error(u"Вы не имеете права просматривать этот профиль!",request)
         return (False,(HttpResponseRedirect("/")))
     # Получение заявок для человека
-    requests = Requests.objects.filter(claim_owner = profile_owner)
+    old_requests = Requests.objects.filter(claim_owner =
+                                           profile_owner).filter(
+        seen=True)
+    given_requests = []
+    for r in old_requests:
+        given_requests.append(R(r.claim,r.person,r))
+
+    new_requests = Requests.objects.filter(claim_owner =
+                                       profile_owner).filter(seen=False)
     claims_with_requests = []
-    for r in requests:
+    for r in new_requests:
         r.seen = True
         r.save()
         claims_with_requests.append(R(r.claim,r.person,r))
     # return (True,('register.html',{'UserCreationFormMY':{}},{'title':'GMAH.RU',},request,app))
-    return (True,('profile.html',{},{'title':'GMAH.RU','profile_owner':profile_owner,'user':user,'claims_with_requests':claims_with_requests},request,app))
+    return (True,('profile.html',{},{'title':'GMAH.RU',
+                                     'profile_owner':profile_owner,
+                                     'user':user,
+                                     'claims_with_requests':claims_with_requests,
+                                     'given_requests':given_requests},
+                  request,app))
 @login_required
 @multilanguage
 def profile_edit(request,id):
@@ -198,7 +222,7 @@ def claim_accept_request(request,request_id):
                   u"данных для заявки %s для пользователя %s!" % (
             claim,info_request.person),
                   request)
-        return (False,(HttpResponseRedirect("/")))
+        return (False,(HttpResponseRedirect("/accounts/profile/")))
     # a = datetime.datetime.now()
     # c = make_aware(a,get_current_timezone())
     # new_request = Requests(claim = claim,
@@ -207,6 +231,35 @@ def claim_accept_request(request,request_id):
     #                         date = c,
     #                         seen = False)
     # new_request.save()
+    return (False,(HttpResponseRedirect("/")))
+@login_required
+@multilanguage
+def claim_withdraw_request(request,request_id):
+    """
+    Добавляет для заявки право на просмотра для того, кто отправил
+    запрос на зявку
+    :param request: страндартный параметр
+    :param request_id: id запроса
+    :return:
+    """
+    lang=select_language(request)
+    user = request.user.username
+    try:
+        info_request = Requests.objects.get(id=request_id)
+    except Requests.DoesNotExist:
+        add_error(u"Запрос с номером  %s не найден!" % id,request)
+        return (False,(HttpResponseRedirect("/")))
+    claim = info_request.claim
+    # Добавляем разрешение для хозяина заявки на просмотр профиля пользователя, который хочет контактные данные
+    result = remove_permission(to=claim,
+                             for_whom=info_request.person.id)
+    if result!='OK':
+        add_error(u"Результат попытки - %s" % result,request)
+        add_error(u"Не удалось задать разрешения на просмотр ваших "
+                  u"данных для заявки %s для пользователя %s!" % (
+            claim,info_request.person),
+                  request)
+        return (False,(HttpResponseRedirect("/accounts/profile/")))
     return (False,(HttpResponseRedirect("/")))
 
 def save_file(file_instance,id,request):
@@ -261,13 +314,16 @@ def main(request):
     # who_can_delete.extend(admins)
     # who_can_delete.append(claim_owner)
     # media_dir = MEDIA_ROOT
-    try:
-        user = Person.objects.get(login = user)
-    except Person.DoesNotExist:
-        add_error(u"Пользователь с логином %s не найден!" % user,request)
-        return (False,(HttpResponseRedirect("/error/")))
+    if user:
+        try:
+            user = Person.objects.get(login = user)
+        except Person.DoesNotExist:
+            add_error(u"Пользователь с логином %s не найден!" % user,request)
+            return (False,(HttpResponseRedirect("/error/")))
     claims =  Claim.objects.filter(deleted=False).filter(closed=False)
-    requests = len(Requests.objects.filter(claim_owner = user).filter(seen=False))
+    requests = ''
+    if user:
+        requests = len(Requests.objects.filter(claim_owner = user).filter(seen=False))
     return (True,('main.html',{},{'title':'GMAH.RU','claims':claims,'user':user,'requests':requests},request,app))
 @multilanguage
 @shows_errors
@@ -389,7 +445,7 @@ def claim_show(request,id):
         # return (False,(HttpResponseRedirect("/assets_by_type/"+type_id+"/")))
         return (False,(HttpResponseRedirect("/")))
     # a = str(claim.id)
-    title = u'GMAH.RU - заявка %s' % str(claim.id)
+    title = u'GMAH.RU - заявка %s' % str(claim.name)
     files=claim.file.all()
     if files:
         first_file = files[0]
@@ -397,10 +453,8 @@ def claim_show(request,id):
     else:
         first_file=''
     # Получаем список тех, кто может просмотреть данные пользователей
-
     can_see_info =  str(user.id) in claim.acl.split(u';') or \
-                    user.login \
-                                                        in admins
+                    user.login in admins or claim.owner.id == user.id
     return (True,('claim_show.html',{},{'title':title ,
                                         'claim':claim,
                                         'files':files,
