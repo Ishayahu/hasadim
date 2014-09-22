@@ -137,11 +137,13 @@ def remove_permission(to='', for_whom='',
         tmp = set([a for a in old_acl.split(acl_separator) if a])
         tmp.remove(str(for_whom))
         new_acl = acl_separator.join(tmp)
+
     except:
         return 'CHANGING_ERROR'
+    # raise ImportError('aa')
     try:
-        c.__setattr__(acl_field,new_acl)
-        c.save()
+        to.__setattr__(acl_field,new_acl)
+        to.save()
     except:
         return 'SAVING_ERROR'
     return 'OK'

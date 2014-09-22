@@ -27,8 +27,10 @@ urlpatterns = patterns('',
 	url(r'^claim/send_request/(\d+)/$', gmah.views.claim_send_request),
 	url(r'^claim/accept_request/(\d+)/$',
         gmah.views.claim_accept_request),
-	url(r'^/claim/withdraw_request/(\d+)/$',
+	url(r'^claim/withdraw_request/(\d+)/$',
         gmah.views.claim_withdraw_request),
+	url(r'^claim/refuse_request/(\d+)/$',
+        gmah.views.claim_refuse_request),
 
 	url(r'^image/delete/(\d+)/$', gmah.views.image_delete),
 

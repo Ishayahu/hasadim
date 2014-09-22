@@ -66,9 +66,13 @@ class Claim(models.Model):
         return u";".join((str(self.id),self.name,"\t"+self.owner.fio))
     class Meta:
         ordering = ['id','open_date']
+# запросы на предоставление контактных данных
 class Requests(models.Model):
+    # для какой заявки отправлен запрос
     claim = models.ForeignKey(Claim, related_name = "claim_for_request",)
+    # кто хозяин этой заявки (не запроса)
     claim_owner = models.ForeignKey(Person, related_name = "claim_owner",)
+    # кто просил данные
     person = models.ForeignKey(Person, related_name = "request_owner",)
     date = models.DateTimeField()
     seen = models.BooleanField(default=False)

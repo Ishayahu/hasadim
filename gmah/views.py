@@ -260,6 +260,47 @@ def claim_withdraw_request(request,request_id):
             claim,info_request.person),
                   request)
         return (False,(HttpResponseRedirect("/accounts/profile/")))
+    # удаляем сам запрос
+    info_request.delete()
+    return (False,(HttpResponseRedirect("/")))
+@login_required
+@multilanguage
+def claim_refuse_request(request,request_id):
+    """
+    Отказ в предоставлении котакных данных. Удаляет объект
+    запроса на просмотр + лишает пользователя возможности
+    просмотреть профиль того, кто хотел получить данные
+    :param request: страндартный параметр
+    :param request_id: id запроса
+    :return:
+    """
+    lang=select_language(request)
+    user = request.user.username
+    try:
+        info_request = Requests.objects.get(id=request_id)
+    except Requests.DoesNotExist:
+        add_error(u"Запрос с номером  %s не найден!" % id,request)
+        return (False,(HttpResponseRedirect("/")))
+    # Получаем номер заявки для которой хотели получить данные
+    claim = info_request.claim
+    # кто просил данные
+    who_want_info = info_request.person
+    # и для этой заявки удаляем разершение на просмотр данных
+    # профиля того, кто просил данные
+    result = remove_permission(to=who_want_info,
+                             for_whom=claim.id)
+    if result!='OK':
+        add_error(u"Результат попытки - %s" % result,request)
+        add_error(u"Не удалось удалить разрешение на "
+                  u"просмотр профиля пользователя %s, "
+                  u"выданный для получения данных к заявки %s "
+                  u"для пользователю %s!" % (
+            who_want_info, claim,info_request.claim_owner),
+                  request)
+        return (False,(HttpResponseRedirect("/accounts/profile/")))
+
+    # удаляем сам запрос
+    info_request.delete()
     return (False,(HttpResponseRedirect("/")))
 
 def save_file(file_instance,id,request):
