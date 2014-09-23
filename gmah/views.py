@@ -92,6 +92,10 @@ def profile_show(request,id):
             self.claim = claim
             self.requester = requester
             self.request = request
+    class P():
+        def __init__(self,claim,requester):
+            self.claim = claim
+            self.requester = requester
     lang=select_language(request)
     user = request.user.username
     try:
@@ -102,25 +106,32 @@ def profile_show(request,id):
     who_can_see=[]
     who_can_see.extend(admins)
     who_can_see.append(profile_owner.login)
-    # добавить людей, которые отправляли запрос на предоставление
-    # контактных данных
-    # получаем список всех тех запросов, которые он отправил другим
-    #  людям
-    requests = Requests.objects.filter(person=profile_owner)
-    # получаем логины этих людей
-    requests_owners = list(set([a.claim_owner.login for a in requests]))
-    who_can_see.extend(requests_owners)
-    # raise NotImplementedError('a')
+    # добавляем людей, которые могу просматрить профиль - это
+    # владельцы заявок, к которым он оставлял запрос на получение
+    # контакных данных и он ещё рассматривается или был принят
+    for p in profile_owner.acl.split(';'):
+        try:
+            c = Claim.objects.get(id=p)
+            # person = Person.objects.get(id=c.owner.)
+            who_can_see.append(c.owner.login)
+        except (Claim.DoesNotExist, Person.DoesNotExist, ValueError):
+            pass
     if user not in who_can_see:
         add_error(u"Вы не имеете права просматривать этот профиль!",request)
         return (False,(HttpResponseRedirect("/")))
-    # Получение заявок для человека
-    old_requests = Requests.objects.filter(claim_owner =
-                                           profile_owner).filter(
-        seen=True)
+    # Кому мы выдали разрешения на просмотр
+    # Проходимся по нашим заявкам и смотрим
+    my_claims = Claim.objects.filter(owner = profile_owner).filter(
+        deleted = False)
     given_requests = []
-    for r in old_requests:
-        given_requests.append(R(r.claim,r.person,r))
+    for c in my_claims:
+        for person_id in c.acl.split(';'):
+            try:
+                person = Person.objects.get(id=person_id)
+                given_requests.append(P(c,person))
+            except (Person.DoesNotExist, ValueError):
+                pass
+
 
     new_requests = Requests.objects.filter(claim_owner =
                                        profile_owner).filter(seen=False)
@@ -129,7 +140,6 @@ def profile_show(request,id):
         r.seen = True
         r.save()
         claims_with_requests.append(R(r.claim,r.person,r))
-    # return (True,('register.html',{'UserCreationFormMY':{}},{'title':'GMAH.RU',},request,app))
     return (True,('profile.html',{},{'title':'GMAH.RU',
                                      'profile_owner':profile_owner,
                                      'user':user,
@@ -230,14 +240,18 @@ def claim_accept_request(request,request_id):
     #                         claim_owner = claim.owner,
     #                         date = c,
     #                         seen = False)
-    # new_request.save()
+    # new_request.save()g
+    info_request.delete()
     return (False,(HttpResponseRedirect("/")))
 @login_required
 @multilanguage
-def claim_withdraw_request(request,request_id):
+def claim_withdraw_request(request,claim_id,requester_id):
     """
     Добавляет для заявки право на просмотра для того, кто отправил
     запрос на зявку
+    Мы должны удалить разрешение на просмотр профиля для обоих человек
+    Для заявки удаляем id запрашивающего
+    Для запрашивающего - id заявки
     :param request: страндартный параметр
     :param request_id: id запроса
     :return:
@@ -245,23 +259,29 @@ def claim_withdraw_request(request,request_id):
     lang=select_language(request)
     user = request.user.username
     try:
-        info_request = Requests.objects.get(id=request_id)
-    except Requests.DoesNotExist:
-        add_error(u"Запрос с номером  %s не найден!" % id,request)
-        return (False,(HttpResponseRedirect("/")))
-    claim = info_request.claim
-    # Добавляем разрешение для хозяина заявки на просмотр профиля пользователя, который хочет контактные данные
+        claim = Claim.objects.get(id=claim_id)
+    except Claim.DoesNotExist:
+        add_error(u"Не нашли заявку id %s" % claim_id,request)
+        return (False,(HttpResponseRedirect("/accounts/profile/")))
+    try:
+        requester = Person.objects.get(id=requester_id)
+    except Claim.DoesNotExist:
+        add_error(u"Не нашли человека id %s" % requester_id,request)
+        return (False,(HttpResponseRedirect("/accounts/profile/")))
     result = remove_permission(to=claim,
-                             for_whom=info_request.person.id)
+                             for_whom=requester.id)
     if result!='OK':
-        add_error(u"Результат попытки - %s" % result,request)
-        add_error(u"Не удалось задать разрешения на просмотр ваших "
-                  u"данных для заявки %s для пользователя %s!" % (
-            claim,info_request.person),
+        add_error(u"Результат попытки удаления доступа из заявки - "
+                  u"%s" %
+                  result,
                   request)
         return (False,(HttpResponseRedirect("/accounts/profile/")))
-    # удаляем сам запрос
-    info_request.delete()
+    result = remove_permission(to=requester,
+                             for_whom=claim.id)
+    if result!='OK':
+        add_error(u"Результат попытки удаления доступа из "
+                  u"пользователя - %s" % result,request)
+        return (False,(HttpResponseRedirect("/accounts/profile/")))
     return (False,(HttpResponseRedirect("/")))
 @login_required
 @multilanguage

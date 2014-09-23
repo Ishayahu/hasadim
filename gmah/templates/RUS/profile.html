@@ -109,13 +109,13 @@
             {% for item in given_requests %}
                 <tr>
                     <td>
-                        <a href="/claim/show/{{ item.claim.id }}/">{{ item.claim.name }}</a>
+                        <a href="/claim/show/{{ claim.id }}/">{{ item.claim.name }}</a>
                     </td>
                     <td>
                         <a href="/accounts/profile/show/{{ item.requester.id }}/">{{ item.requester.fio }}</a>
                     </td>
                     <td>
-                        <a href="/claim/withdraw_request/{{ item.request.id }}/">Отозвать</a>
+                        <a href="/claim/withdraw_request/{{ item.claim.id }}/{{ item.requester.id }}/">Отозвать</a>
                     </td>
                 </tr>
             {% endfor %}
